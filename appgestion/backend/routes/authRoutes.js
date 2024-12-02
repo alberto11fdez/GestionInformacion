@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();  // Asegúrate de crear un router aquí
 const User = require('../models/User'); // Asegúrate de que la ruta sea correcta
+const Material = require('../models/Materiales');  // Ruta al modelo
 
 // Ruta de login
 router.post('/login', async (req, res) => {
@@ -23,6 +24,23 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Error en la consulta:', error);
     res.status(500).json({ message: 'Error en el servidor' });
+  }
+});
+
+router.get('/materiales', async (req, res) => {
+  try {
+    console.log('Buscando materiales...'); // Debug log
+    const materiales = await Material.find({});  // Get all fields first
+    console.log('Materiales encontrados:', materiales); // Debug log
+    
+    if (!materiales || materiales.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron materiales' });
+    }
+    
+    res.json(materiales);
+  } catch (error) {
+    console.error('Error getting materiales:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 

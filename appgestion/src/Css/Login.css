@@ -1,0 +1,64 @@
+/* Asegúrate de que el body ocupe toda la altura de la pantalla */
+body, html {
+  height: 100%;
+  margin: 0;
+}
+
+/* El contenedor principal ocupará toda la pantalla y usará Flexbox */
+.login-container {
+  display: flex;
+  justify-content: center;  /* Centrado horizontal */
+  align-items: center;      /* Centrado vertical */
+  height: 100vh;            /* Ocupa el 100% de la altura de la ventana */
+  background-color: #f0f0f0; /* Fondo claro */
+}
+
+.loginOrden{
+  justify-content: center;
+}
+
+/* Estilo para el formulario */
+form {
+  width: 100%;
+  max-width: 400px;  /* Limita el ancho máximo del formulario */
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: white;
+}
+
+h2 {
+  text-align: center;
+}
+
+label {
+  margin: 10px 0 5px;
+}
+
+input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+button {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+  text-align: center;
+}

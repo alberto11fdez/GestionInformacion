@@ -4,18 +4,18 @@ import axios from 'axios';
 import '../Css/Login.css';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [nombre, setNombre] = useState('');  // Cambio de 'email' a 'nombre'
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log('Datos enviados:', { email, password }); // Verifica que los datos sean correctos
+    console.log('Datos enviados:', { nombre, password }); // Verifica que los datos sean correctos
 
     try {
-      const response = await axios.post('http://localhost:5000/api/login', { email, password });
-      alert(response.data.message);
+      // Cambia 'email' a 'nombre' en la solicitud
+      const response = await axios.post('http://localhost:5000/api/login', { nombre, password });
       navigate('/pagPrincipal'); // Redirige a la página principal
     } catch (error) {
       if (error.response) {
@@ -32,12 +32,12 @@ const Login = () => {
         <h2>Iniciar sesión</h2>
         <form onSubmit={handleLogin}>
           <div>
-            <label htmlFor="email">Correo electrónico</label>
+            <label htmlFor="nombre">Nombre</label>  {/* Cambio de 'email' a 'nombre' */}
             <input
               type="text"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="nombre"  
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
               required
             />
           </div>

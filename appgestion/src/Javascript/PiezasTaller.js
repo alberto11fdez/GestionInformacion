@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import '../Css/PiezasTaller.css';
+import { TiMediaPlayOutline } from "react-icons/ti";
 
 const PiezasTaller = () => {
   const [material, setMaterial] = useState('');
@@ -92,33 +94,33 @@ const PiezasTaller = () => {
       console.log('No hay pieza seleccionada para actualizar');
       return; // No hay pieza seleccionada para actualizar
     }
-  
+
     // Crear el objeto con los datos a actualizar
     const updatedPieza = {
       NOMBRE: nombre,
       FABRICANTE: fabricante,
       ID_TIPO: material,  // Este es el tipo de material seleccionado
     };
-  
+
     console.log('Datos a actualizar:', updatedPieza); // Verifica los datos antes de enviarlos
-  
+
     try {
       // Realizar la solicitud PUT para actualizar la pieza
       const response = await axios.put(`http://localhost:5000/api/actualizar/${selectedPieza._id}`, updatedPieza);
       console.log('Pieza actualizada:', response.data);
-  
+
       // Hacer una solicitud GET para obtener la lista de piezas actualizada
       const piezasActualizadas = await axios.get(`http://localhost:5000/api/piezas/${material}`);
       console.log('Piezas actualizadas:', piezasActualizadas.data);
-  
+
       // Actualizar el estado de las piezas con la lista actualizada
       setPiezas(piezasActualizadas.data);
-  
+
       // Limpiar los campos de los textbox después de la actualización, pero no cambiar el material
       setNombre('');
       setFabricante('');
       setSelectedPieza(null);
-  
+
       // No cambiamos el valor del material, lo dejamos como estaba antes
     } catch (error) {
       console.error('Error al actualizar la pieza:', error);
@@ -130,19 +132,19 @@ const PiezasTaller = () => {
       console.log('No hay pieza seleccionada para borrar');
       return; // No hay pieza seleccionada para borrar
     }
-  
+
     try {
       // Realizar la solicitud DELETE para borrar la pieza
       const response = await axios.delete(`http://localhost:5000/api/borrar/${selectedPieza._id}`);
       console.log('Pieza borrada:', response.data);
-  
+
       // Hacer una solicitud GET para obtener la lista de piezas actualizada
       const piezasActualizadas = await axios.get(`http://localhost:5000/api/piezas/${material}`);
       console.log('Piezas actualizadas:', piezasActualizadas.data);
-  
+
       // Actualizar el estado de las piezas con la lista actualizada
       setPiezas(piezasActualizadas.data);
-  
+
       // Limpiar los campos de los textbox después de la eliminación, pero no cambiar el material
       setNombre('');
       setFabricante('');
@@ -153,19 +155,19 @@ const PiezasTaller = () => {
       alert('Hubo un error al eliminar la pieza');
     }
   };
-  
+
   const handleSalir = () => {
     navigate('/');
   };
 
   const handleMaterialChange = (e) => {
-    setMaterial(e.target.value); 
+    setMaterial(e.target.value);
   };
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h2>Piezas Taller</h2>
-      <div>
+      <div className="material-selection">
         <label>Material</label>
         <select value={material} onChange={handleMaterialChange}>
           <option value="">Seleccione el tipo de material</option>
@@ -179,7 +181,7 @@ const PiezasTaller = () => {
 
       {/* Mostrar tabla solo si hay piezas para el tipo de material seleccionado */}
       {piezas.length > 0 ? (
-        <table style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
+        <table className="pieza-table">
           <thead>
             <tr>
               <th></th>
@@ -193,8 +195,7 @@ const PiezasTaller = () => {
             {piezas.map((pieza) => (
               <tr key={pieza._id}>
                 <td>
-                  {/* Botón que actualiza los campos de texto cuando se hace clic */}
-                  <button onClick={() => handleRowClick(pieza)}>Seleccionar</button>
+                  <button onClick={() => handleRowClick(pieza)}><TiMediaPlayOutline /></button>
                 </td>
                 <td>{pieza._id}</td>
                 <td>{pieza.NOMBRE}</td>
@@ -205,11 +206,11 @@ const PiezasTaller = () => {
           </tbody>
         </table>
       ) : (
-        material && <p>No hay piezas disponibles para este material.</p>  // Mensaje si no hay piezas para el material seleccionado
+        material && <p>No hay piezas disponibles para este material.</p>
       )}
 
-      <div style={{ marginTop: '20px' }}>
-        <div>
+      <div className="input-fields">
+        <div className="nombre-field">
           <label>Nombre</label>
           <input
             type="text"
@@ -218,7 +219,7 @@ const PiezasTaller = () => {
             placeholder="Ingrese nombre"
           />
         </div>
-        <div>
+        <div className="fabricante-field">
           <label>Fabricante</label>
           <input
             type="text"
@@ -227,12 +228,13 @@ const PiezasTaller = () => {
             placeholder="Ingrese fabricante"
           />
         </div>
-        <div style={{ marginTop: '10px' }}>
-          {rolName === 'administrador' && <button onClick={handleInsertar}>Insertar</button>}
-          {rolName === 'administrador' && <button onClick={handleActualizar}>Actualizar</button>}
-          {rolName === 'administrador' &&<button onClick={handleBorrar}>Borrar</button>}
-          <button onClick={handleSalir}>Salir</button>
-        </div>
+      </div>
+
+      <div className="button-group">
+        {rolName === 'administrador' && <button onClick={handleInsertar}>Insertar</button>}
+        {rolName === 'administrador' && <button onClick={handleActualizar}>Actualizar</button>}
+        {rolName === 'administrador' && <button onClick={handleBorrar}>Borrar</button>}
+        <button onClick={handleSalir}>Salir</button>
       </div>
     </div>
   );

@@ -27,10 +27,10 @@ const Login = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div className='loginTodo'>
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
-        <div>
+        <div className='nombreTodo'>
           <label>Nombre</label>
           <input 
             type="text" 
@@ -39,7 +39,7 @@ const Login = () => {
             placeholder="Ingrese su nombre"
           />
         </div>
-        <div>
+        <div className='contraseñaTodo'>
           <label>Contraseña</label>
           <input 
             type="password" 

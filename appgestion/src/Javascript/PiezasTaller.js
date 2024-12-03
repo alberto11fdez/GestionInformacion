@@ -3,6 +3,10 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../Css/PiezasTaller.css';
 import { TiMediaPlayOutline } from "react-icons/ti";
+import { HiChevronDoubleRight } from "react-icons/hi";
+import { HiChevronDoubleLeft } from "react-icons/hi";
+
+
 
 const PiezasTaller = () => {
   const [material, setMaterial] = useState('');
@@ -13,6 +17,8 @@ const PiezasTaller = () => {
   const [selectedPieza, setSelectedPieza] = useState(null);
   const navigate = useNavigate();
   const [rolName, setRolName] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 5;
 
   // Obtener el rol del localStorage al cargar el componente
   useEffect(() => {
@@ -164,6 +170,28 @@ const PiezasTaller = () => {
     setMaterial(e.target.value);
   };
 
+   // Cálculo de la cantidad de páginas
+   const totalPages = Math.ceil(piezas.length / rowsPerPage);
+
+   // Obtener los datos para la página actual
+   const currentData = piezas.slice(
+     (currentPage - 1) * rowsPerPage,
+     currentPage * rowsPerPage
+   );
+ 
+   // Manejo del cambio de página
+   const handlePreviousPage = () => {
+     if (currentPage > 1) {
+       setCurrentPage(currentPage - 1);
+     }
+   };
+ 
+   const handleNextPage = () => {
+     if (currentPage < totalPages) {
+       setCurrentPage(currentPage + 1);
+     }
+   };
+
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h2>Piezas Taller</h2>
@@ -181,33 +209,55 @@ const PiezasTaller = () => {
 
       {/* Mostrar tabla solo si hay piezas para el tipo de material seleccionado */}
       {piezas.length > 0 ? (
-        <table className="pieza-table">
-          <thead>
-            <tr>
-              <th></th>
-              <th>ID</th>
-              <th>NOMBRE</th>
-              <th>FABRICANTE</th>
-              <th>ID_TIPO</th>
-            </tr>
-          </thead>
-          <tbody>
-            {piezas.map((pieza) => (
-              <tr key={pieza._id}>
-                <td>
-                  <button onClick={() => handleRowClick(pieza)}><TiMediaPlayOutline /></button>
-                </td>
-                <td>{pieza._id}</td>
-                <td>{pieza.NOMBRE}</td>
-                <td>{pieza.FABRICANTE}</td>
-                <td>{pieza.ID_TIPO}</td>
+        <>
+          <table className="pieza-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>ID</th>
+                <th>NOMBRE</th>
+                <th>FABRICANTE</th>
+                <th>ID_TIPO</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {currentData.map((pieza) => (
+                <tr key={pieza._id}>
+                  <td>
+                    <button onClick={() => handleRowClick(pieza)}>
+                      <TiMediaPlayOutline />
+                    </button>
+                  </td>
+                  <td>{pieza._id}</td>
+                  <td>{pieza.NOMBRE}</td>
+                  <td>{pieza.FABRICANTE}</td>
+                  <td>{pieza.ID_TIPO}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="pagination-controls">
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+            >
+              <HiChevronDoubleLeft />
+            </button>
+            <span>
+              Página {currentPage} de {totalPages}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+            >
+              <HiChevronDoubleRight />
+            </button>
+          </div>
+        </>
       ) : (
         material && <p>No hay piezas disponibles para este material.</p>
       )}
+  
 
       <div className="input-fields">
         <div className="nombre-field">

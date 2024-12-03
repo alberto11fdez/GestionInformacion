@@ -76,4 +76,23 @@ body {
   .button-group button:hover {
     background-color: #0056b3;
   }
+
+  .pagination-controls {
+    display: flex;
+    justify-content: center; /* Centra los elementos horizontalmente */
+    align-items: center;    /* Alinea los elementos verticalmente */
+    gap: 10px;              /* Espaciado uniforme entre los elementos */
+    margin-top: 20px;       /* Espaciado superior para separar la tabla */
+  }
+  
+  .pagination-controls button {
+    padding: 8px 16px;      /* Tamaño de los botones */
+    font-size: 14px;        /* Tamaño de fuente de los botones */
+    cursor: pointer;        /* Cambia el cursor al pasar sobre los botones */
+  }
+  
+  .pagination-controls span {
+    font-size: 14px;        /* Tamaño de la fuente de la frase */
+  }
+  
   

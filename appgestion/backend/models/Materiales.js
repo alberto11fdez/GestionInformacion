@@ -10,6 +10,6 @@ const materialSchema = new mongoose.Schema({
     type: String,
     required: true,
   }
-},{ collection: 'tTipoPieza' });;
+}, { collection: 'tTipoPieza' });
 
 module.exports = mongoose.model('Material', materialSchema);

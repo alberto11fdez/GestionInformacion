@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const PiezasTaller = () => {
   const [material, setMaterial] = useState('');
@@ -7,6 +8,17 @@ const PiezasTaller = () => {
   const [fabricante, setFabricante] = useState('');
   const [piezas, setPiezas] = useState([]);
   const [materiales, setMateriales] = useState([]);
+  const [selectedPieza, setSelectedPieza] = useState(null);
+  const navigate = useNavigate();
+  const [rolName, setRolName] = useState('');
+
+  // Obtener el rol del localStorage al cargar el componente
+  useEffect(() => {
+    const storedRolName = localStorage.getItem('rolName');
+    if (storedRolName) {
+      setRolName(storedRolName);
+    }
+  }, []);
 
   // Fetch materiales desde la API al cargar el componente
   useEffect(() => {
@@ -15,9 +27,7 @@ const PiezasTaller = () => {
         const response = await axios.get('http://localhost:5000/api/materiales');
         console.log('Datos recibidos:', response.data); // Debug log
 
-        // Verifica que los datos sean un array y asigna a `materiales`
         if (Array.isArray(response.data)) {
-          // Mapea para asegurarte de que las propiedades están en mayúsculas
           setMateriales(response.data.map(item => ({
             ID_TIPO: item.ID_TIPO,
             NOMBRE: item.NOMBRE
@@ -33,24 +43,123 @@ const PiezasTaller = () => {
     fetchMateriales();
   }, []);
 
-  const handleInsertar = () => {
+  // Fetch piezas según el tipo de material
+  useEffect(() => {
+    if (material) {
+      const fetchPiezas = async () => {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/piezas/${material}`);
+          console.log('Piezas recibidas:', response.data); // Debug log
+          setPiezas(response.data);
+        } catch (error) {
+          console.error('Error al cargar las piezas:', error);
+          setPiezas([]); // Si hay un error, asegurarse de limpiar las piezas
+        }
+      };
+
+      fetchPiezas();
+    } else {
+      setPiezas([]); // Si no hay material seleccionado, limpiamos las piezas
+    }
+  }, [material]);
+
+  const handleInsertar = async () => {
     const nuevaPieza = {
-      id: piezas.length + 1,  // Generamos un nuevo ID
-      nombre: nombre,
-      fabricante: fabricante,
-      id_tipo: material
+      NOMBRE: nombre,
+      FABRICANTE: fabricante,
+      ID_TIPO: material,
     };
-    setPiezas([...piezas, nuevaPieza]);
-    setNombre('');
-    setFabricante('');
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/insertar', nuevaPieza);
+      console.log('Pieza insertada:', response.data);
+      setPiezas([...piezas, response.data]); // Añadir la nueva pieza a la tabla
+    } catch (error) {
+      console.error('Error al insertar la pieza:', error);
+    }
   };
 
-  const handleBorrar = (id) => {
-    setPiezas(piezas.filter((pieza) => pieza.id !== id));
+  // Manejar la selección de una fila para mostrar los datos en los inputs
+  const handleRowClick = (pieza) => {
+    setNombre(pieza.NOMBRE);
+    setFabricante(pieza.FABRICANTE);
+    setMaterial(pieza.ID_TIPO); // Establece el tipo de material correspondiente
+    setSelectedPieza(pieza); // Establecer la pieza seleccionada
   };
 
-  const handleActualizar = () => {
-    setPiezas(piezas.map(pieza => pieza.id === 1 ? { ...pieza, nombre: 'Nuevo nombre' } : pieza));  // Ejemplo para actualizar
+  const handleActualizar = async () => {
+    if (!selectedPieza) {
+      console.log('No hay pieza seleccionada para actualizar');
+      return; // No hay pieza seleccionada para actualizar
+    }
+  
+    // Crear el objeto con los datos a actualizar
+    const updatedPieza = {
+      NOMBRE: nombre,
+      FABRICANTE: fabricante,
+      ID_TIPO: material,  // Este es el tipo de material seleccionado
+    };
+  
+    console.log('Datos a actualizar:', updatedPieza); // Verifica los datos antes de enviarlos
+  
+    try {
+      // Realizar la solicitud PUT para actualizar la pieza
+      const response = await axios.put(`http://localhost:5000/api/actualizar/${selectedPieza._id}`, updatedPieza);
+      console.log('Pieza actualizada:', response.data);
+  
+      // Hacer una solicitud GET para obtener la lista de piezas actualizada
+      const piezasActualizadas = await axios.get(`http://localhost:5000/api/piezas/${material}`);
+      console.log('Piezas actualizadas:', piezasActualizadas.data);
+  
+      // Actualizar el estado de las piezas con la lista actualizada
+      setPiezas(piezasActualizadas.data);
+  
+      // Limpiar los campos de los textbox después de la actualización, pero no cambiar el material
+      setNombre('');
+      setFabricante('');
+      setSelectedPieza(null);
+  
+      // No cambiamos el valor del material, lo dejamos como estaba antes
+    } catch (error) {
+      console.error('Error al actualizar la pieza:', error);
+    }
+  };
+
+  const handleBorrar = async () => {
+    if (!selectedPieza) {
+      console.log('No hay pieza seleccionada para borrar');
+      return; // No hay pieza seleccionada para borrar
+    }
+  
+    try {
+      // Realizar la solicitud DELETE para borrar la pieza
+      const response = await axios.delete(`http://localhost:5000/api/borrar/${selectedPieza._id}`);
+      console.log('Pieza borrada:', response.data);
+  
+      // Hacer una solicitud GET para obtener la lista de piezas actualizada
+      const piezasActualizadas = await axios.get(`http://localhost:5000/api/piezas/${material}`);
+      console.log('Piezas actualizadas:', piezasActualizadas.data);
+  
+      // Actualizar el estado de las piezas con la lista actualizada
+      setPiezas(piezasActualizadas.data);
+  
+      // Limpiar los campos de los textbox después de la eliminación, pero no cambiar el material
+      setNombre('');
+      setFabricante('');
+      setSelectedPieza(null);
+
+    } catch (error) {
+      console.error('Error al borrar la pieza:', error);
+      alert('Hubo un error al eliminar la pieza');
+    }
+  };
+  
+  const handleSalir = () => {
+    navigate('/');
+  };
+
+  const handleMaterialChange = (e) => {
+    setMaterial(e.target.value); 
   };
 
   return (
@@ -58,70 +167,71 @@ const PiezasTaller = () => {
       <h2>Piezas Taller</h2>
       <div>
         <label>Material</label>
-        <select value={material} onChange={(e) => setMaterial(e.target.value)}>
+        <select value={material} onChange={handleMaterialChange}>
           <option value="">Seleccione el tipo de material</option>
           {materiales.map((mat, index) => (
-            // Verifica que `mat` tenga las propiedades esperadas antes de renderizar
-            mat && mat.ID_TIPO && mat.NOMBRE ? (
-              <option key={index} value={mat.ID_TIPO}>
-                {mat.NOMBRE}
-              </option>
-            ) : (
-              <option key={index} value="" disabled>
-                Material inválido
-              </option>
-            )
+            <option key={index} value={mat.ID_TIPO}>
+              {mat.NOMBRE}
+            </option>
           ))}
         </select>
       </div>
 
-      <table style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>NOMBRE</th>
-            <th>FABRICANTE</th>
-            <th>ID_TIPO</th>
-            <th>ACCIONES</th>
-          </tr>
-        </thead>
-        <tbody>
-          {piezas.map((pieza) => (
-            <tr key={pieza.id}>
-              <td>{pieza.id}</td>
-              <td>{pieza.nombre}</td>
-              <td>{pieza.fabricante}</td>
-              <td>{pieza.id_tipo}</td>
-              <td>
-                <button onClick={() => handleBorrar(pieza.id)} style={{ backgroundColor: 'red', color: 'white' }}>Borrar</button>
-              </td>
+      {/* Mostrar tabla solo si hay piezas para el tipo de material seleccionado */}
+      {piezas.length > 0 ? (
+        <table style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th></th>
+              <th>ID</th>
+              <th>NOMBRE</th>
+              <th>FABRICANTE</th>
+              <th>ID_TIPO</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {piezas.map((pieza) => (
+              <tr key={pieza._id}>
+                <td>
+                  {/* Botón que actualiza los campos de texto cuando se hace clic */}
+                  <button onClick={() => handleRowClick(pieza)}>Seleccionar</button>
+                </td>
+                <td>{pieza._id}</td>
+                <td>{pieza.NOMBRE}</td>
+                <td>{pieza.FABRICANTE}</td>
+                <td>{pieza.ID_TIPO}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        material && <p>No hay piezas disponibles para este material.</p>  // Mensaje si no hay piezas para el material seleccionado
+      )}
 
       <div style={{ marginTop: '20px' }}>
         <div>
           <label>Nombre</label>
-          <input 
-            type="text" 
-            value={nombre} 
-            onChange={(e) => setNombre(e.target.value)} 
+          <input
+            type="text"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
             placeholder="Ingrese nombre"
           />
         </div>
         <div>
           <label>Fabricante</label>
-          <input 
-            type="text" 
-            value={fabricante} 
-            onChange={(e) => setFabricante(e.target.value)} 
+          <input
+            type="text"
+            value={fabricante}
+            onChange={(e) => setFabricante(e.target.value)}
             placeholder="Ingrese fabricante"
           />
         </div>
         <div style={{ marginTop: '10px' }}>
-          <button onClick={handleInsertar}>Insertar</button>
-          <button onClick={handleActualizar}>Actualizar</button>
+          {rolName === 'administrador' && <button onClick={handleInsertar}>Insertar</button>}
+          {rolName === 'administrador' && <button onClick={handleActualizar}>Actualizar</button>}
+          {rolName === 'administrador' &&<button onClick={handleBorrar}>Borrar</button>}
+          <button onClick={handleSalir}>Salir</button>
         </div>
       </div>
     </div>
